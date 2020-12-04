@@ -69,3 +69,29 @@ class TestShot(unittest.TestCase):
         getctime_mock.returns(1)
 
         assert shot(dest="/tmp/output", dry_run=True) == "cp /tmp/tests/first /tmp/output"
+
+
+class TestShotErrorHandling(unittest.TestCase):
+    def test_n(self):
+        assert shot(n=0, color=False) == "n must be > 0. got:0\n"
+
+    def test_s(self):
+        assert shot(s=0, color=False) == "s must be > 0. got:0\n"
+
+    def test_src(self):
+        assert (
+            shot(src="dir/that/does_not/exist", color=False)
+            == "src must be a directory. got:dir/that/does_not/exist\n"
+        )
+
+    def test_dest(self):
+        assert (
+            shot(dest="dir/that/does_not/exist", color=False)
+            == "dest must be a directory. got:dir/that/does_not/exist\n"
+        )
+
+    def test_multiple_errors(self):
+        assert (
+            shot(n=0, s=0, dest="foo", src="foo", color=False)
+            == "src must be a directory. got:foo\ndest must be a directory. got:foo\nn must be > 0. got:0\ns must be > 0. got:0\n"
+        )

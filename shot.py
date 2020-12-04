@@ -1,7 +1,7 @@
 # Standard Library
+import glob
 import os
 import subprocess
-import glob
 from typing import List
 
 # Third party
@@ -63,7 +63,8 @@ def shot(
         err_msg += f"s must be > 0. got:{s}\n"
 
     if err_msg:
-        if color: err_msg = colored(err_msg, "red")
+        if color:
+            err_msg = colored(err_msg, "red")
 
         return err_msg
 
@@ -82,7 +83,8 @@ def shot(
     screenshots_to_copy = all_screenshots[s - 1 : s + n - 1]
     if len(screenshots_to_copy) < n:
         warning_msg = f"Warning: there are not enough files to copy with s:{s}, n:{n}"
-        if color: warning_msg = colored(warning_msg, "yellow")
+        if color:
+            warning_msg = colored(warning_msg, "yellow")
         print(warning_msg)
 
     command = f"{cmd} {' '.join(screenshots_to_copy)} {dest}"
@@ -90,7 +92,8 @@ def shot(
         return command
 
     success_msg = f"{commands[cmd]} {screenshots_to_copy} to {dest} successfully!"
-    if color: success_msg = colored(success_msg, "green")
+    if color:
+        success_msg = colored(success_msg, "green")
 
     subprocess.run(command.split())
     return success_msg
