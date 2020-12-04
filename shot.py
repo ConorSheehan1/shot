@@ -72,7 +72,7 @@ def shot(
         screenshot_dir = src
     else:
         screenshot_dir = _get_shell_output(
-            "defaults read com.apple.screencapture location".split(), encoding
+            ["defaults", "read", "com.apple.screencapture location"], encoding
         )
 
     screenshot_dir_parsed = os.path.expanduser(screenshot_dir)

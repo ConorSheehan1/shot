@@ -25,7 +25,7 @@ class TestShot(unittest.TestCase):
         glob_mock.side_effect = [["/tmp/tests/first"]]
         getctime_mock.returns(1)
 
-        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
+        check_output_calls = [call(["defaults", "read", "com.apple.screencapture location"])]
         run_mock_calls = [call(["cp", "/tmp/tests/first", "."])]
 
         shot()
@@ -43,7 +43,7 @@ class TestShot(unittest.TestCase):
         glob_mock.side_effect = [["/tmp/tests/first"]]
         getctime_mock.returns(1)
 
-        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
+        check_output_calls = [call(["defaults", "read", "com.apple.screencapture location"])]
 
         assert shot(dry_run=True) == "cp /tmp/tests/first ."
         check_output_mock.assert_has_calls(check_output_calls)
