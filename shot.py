@@ -34,7 +34,7 @@ def shot(
     Screenshot Helper for OSX Terminal
 
     Args:
-        cmd: command, either cp or mv. Default: cp
+        cmd: command, either cp or mv recommended. Default: cp
         src: source directory. If None provided, find using apple defaults. Default: None
         dest: destination directory. Default: .
         s: start at sth latest file. Default: 1
@@ -76,6 +76,14 @@ def shot(
         )
 
     screenshot_dir_parsed = os.path.expanduser(screenshot_dir)
+    # TODO: can this ever be reached? if defaults isn't available exception is thrown.
+    # should only be able to set screencapture location to valid dirs.
+    if not os.path.isdir(screenshot_dir_parsed):
+        warning_msg = "got invalid screenshot dir. please try setting the dir using --src"
+        if color:
+            warning_msg = colored(warning_msg, "yellow")
+        return warning_msg
+
     # all files in screenshots dir, sorted from newest to oldest
     all_screenshots = sorted(
         glob.glob(f"{screenshot_dir_parsed}/*"), key=os.path.getctime, reverse=True

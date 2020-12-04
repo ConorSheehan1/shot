@@ -7,6 +7,11 @@ from shot import shot
 
 
 class TestShot(unittest.TestCase):
+    def setUp(self):
+        self.patcher = patch("os.path.isdir")
+        self.mock_isdir = self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+
     def test_version(self):
         """
         should return the version
@@ -48,22 +53,18 @@ class TestShot(unittest.TestCase):
         assert shot(dry_run=True) == "cp /tmp/tests/first ."
         check_output_mock.assert_has_calls(check_output_calls)
 
-    @patch("os.path.isdir")
     @patch("os.path.getctime")
     @patch("glob.glob")
-    def test_shot_src(self, glob_mock, getctime_mock, isdir_mock):
-        isdir_mock.returns(True)
+    def test_shot_src(self, glob_mock, getctime_mock):
         glob_mock.side_effect = [["/tmp/some/other/path"]]
         getctime_mock.returns(1)
 
         assert shot(src="/tmp/some/other/path", dry_run=True) == "cp /tmp/some/other/path ."
 
-    @patch("os.path.isdir")
     @patch("os.path.getctime")
     @patch("glob.glob")
     @patch("subprocess.check_output")
-    def test_shot_dest(self, check_output_mock, glob_mock, getctime_mock, isdir_mock):
-        isdir_mock.returns(True)
+    def test_shot_dest(self, check_output_mock, glob_mock, getctime_mock):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
         getctime_mock.returns(1)
@@ -91,6 +92,9 @@ class TestShotErrorHandling(unittest.TestCase):
         )
 
     def test_multiple_errors(self):
+        """
+        should show all errors together. don't make user find them one by one
+        """
         assert (
             shot(n=0, s=0, dest="foo", src="foo", color=False)
             == "src must be a directory. got:foo\ndest must be a directory. got:foo\nn must be > 0. got:0\ns must be > 0. got:0\n"
