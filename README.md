@@ -10,6 +10,10 @@
 **T**erminal 
 
 # Install
+```bash
+git clone git@github.com:ConorSheehan1/shot.git
+pip install ./shot
+```
 
 # Example
 ```bash
