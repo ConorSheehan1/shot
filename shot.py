@@ -76,13 +76,6 @@ def shot(
         )
 
     screenshot_dir_parsed = os.path.expanduser(screenshot_dir)
-    # TODO: can this ever be reached? if defaults isn't available exception is thrown.
-    # should only be able to set screencapture location to valid dirs.
-    if not os.path.isdir(screenshot_dir_parsed):
-        warning_msg = "got invalid screenshot dir. please try setting the dir using --src"
-        if color:
-            warning_msg = colored(warning_msg, "yellow")
-        return warning_msg
 
     # all files in screenshots dir, sorted from newest to oldest
     all_screenshots = sorted(
