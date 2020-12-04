@@ -1,6 +1,7 @@
 # Standard Library
 import glob
 import os
+import shutil
 import subprocess
 from typing import List
 
@@ -22,7 +23,7 @@ def _get_shell_output(args: List[str], encoding: str) -> str:
 def shot(
     cmd: str = "cp",
     src: str = None,
-    dest: str = ".",
+    dst: str = ".",
     s: int = 1,
     n: int = 1,
     color: bool = True,
@@ -34,13 +35,13 @@ def shot(
     Screenshot Helper for OSX Terminal
 
     Args:
-        cmd: command, either cp or mv recommended. Default: cp
+        cmd: command, either cp or mv to copy or move. Default: cp
         src: source directory. If None provided, find using apple defaults. Default: None
-        dest: destination directory. Default: .
+        dst: destination directory. Default: .
         s: start at sth latest file. Default: 1
         n: number of files to copy/move: Default: 1
         color: toggle color output. Default: True
-        dry_run: if True show what command would be run. If False execute the command. Default: False
+        dry_run: if True show an equivalent command that would be run. Default: False
         encoding: encoding to use for shell. Default: utf-8
         version: if True show version, else run shot. Default: False
     """
@@ -53,9 +54,9 @@ def shot(
         if not os.path.isdir(src):
             err_msg += f"src must be a directory. got:{src}\n"
 
-    dest = os.path.expanduser(dest)
-    if not os.path.isdir(dest):
-        err_msg += f"dest must be a directory. got:{dest}\n"
+    dst = os.path.expanduser(dst)
+    if not os.path.isdir(dst):
+        err_msg += f"dst must be a directory. got:{dst}\n"
 
     if n < 1:
         err_msg += f"n must be > 0. got:{n}\n"
@@ -72,7 +73,7 @@ def shot(
         screenshot_dir = src
     else:
         screenshot_dir = _get_shell_output(
-            ["defaults", "read", "com.apple.screencapture location"], encoding
+            "defaults read com.apple.screencapture location".split(), encoding
         )
 
     screenshot_dir_parsed = os.path.expanduser(screenshot_dir)
@@ -88,16 +89,22 @@ def shot(
             warning_msg = colored(warning_msg, "yellow")
         print(warning_msg)
 
-    command = f"{cmd} {' '.join(screenshots_to_copy)} {dest}"
+    equivalent_command = ' '.join([cmd, ' '.join(screenshots_to_copy), dst])
     if dry_run:
-        return command
+        return equivalent_command
 
-    success_msg = f"{commands[cmd]} {screenshots_to_copy} to {dest} successfully!"
+    success_msg = f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}"
+    err_msg = f"{equivalent_command} failed"
     if color:
         success_msg = colored(success_msg, "green")
+        err_msg = colored(err_msg, "red")
 
-    subprocess.run(command.split())
-    return success_msg
+    try:
+        for file in screenshots_to_copy:
+            shutil.copy(file, dst)
+        return success_msg
+    except Error as e:
+        return err_msg
 
 
 if __name__ == "__main__":
