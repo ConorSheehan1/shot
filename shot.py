@@ -86,6 +86,13 @@ def shot(
         glob.glob(f"{screenshot_dir_parsed}/*"), key=os.path.getctime, reverse=True
     )
     screenshots_to_copy = all_screenshots[s - 1 : s + n - 1]
+
+    if len(screenshots_to_copy) < 1:
+        err_msg = f"No files found in {screenshot_dir_parsed}"
+        if color:
+            err_msg = colored(err_msg, "red")
+        return err_msg
+
     if len(screenshots_to_copy) < n:
         warning_msg = f"Warning: there are not enough files to copy with s:{s}, n:{n}"
         if color:

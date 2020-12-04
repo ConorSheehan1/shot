@@ -30,3 +30,8 @@ poetry run task isort
 # pass args e.g. patch, minor, major, choose to commit changes or not
 poetry run bumpversion --commit --tag patch
 ```
+
+#### Approach
+Errors are swallowed in favor of user friendly short messages.
+Usually wouldn't suppress errors, but traces can be super long, and there shouldn't be much to handle here.
+TODO: possibly switch to rich, then leave exceptions since they'll be formatted?
