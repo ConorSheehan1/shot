@@ -12,7 +12,10 @@
 # Install
 ```bash
 git clone git@github.com:ConorSheehan1/shot.git
-pip install ./shot
+cd shot
+poetry install
+poetry build
+pip install .
 ```
 
 # Example
