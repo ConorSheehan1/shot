@@ -35,7 +35,7 @@ taskipy = "*"
 [tool.taskipy.tasks]
 bumpversion = "bumpversion"
 ci_lint = "black --check ."
-ci_isort = "isort --check --diff"
+ci_isort = "isort --check --diff ."
 dev = "python shot.py"
 isort = 'isort .'
 lint = "black ."
