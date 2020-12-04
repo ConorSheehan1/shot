@@ -89,11 +89,13 @@ def shot(
             warning_msg = colored(warning_msg, "yellow")
         print(warning_msg)
 
-    equivalent_command = ' '.join([cmd, ' '.join(screenshots_to_copy), dst])
+    equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
     if dry_run:
         return equivalent_command
 
-    success_msg = f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}"
+    success_msg = (
+        f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}"
+    )
     err_msg = f"{equivalent_command} failed"
     if color:
         success_msg = colored(success_msg, "green")
@@ -103,7 +105,7 @@ def shot(
         for file in screenshots_to_copy:
             shutil.copy(file, dst)
         return success_msg
-    except Error as e:
+    except Exception as e:
         return err_msg
 
 

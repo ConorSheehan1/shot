@@ -3,6 +3,7 @@
 poetry install
 
 # install shot as symlink to avoid reinstall whenever code changes
+# instead of pip install /path/to/shot
 # https://github.com/python-poetry/poetry/issues/1135
 # workaround using __name__ == '__main__' and fire
 poetry run task dev
