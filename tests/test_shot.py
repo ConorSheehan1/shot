@@ -2,6 +2,9 @@
 import unittest
 from unittest.mock import call, patch
 
+# Third party
+from termcolor import colored
+
 # shot
 from shot import shot
 
@@ -33,7 +36,9 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/first", ".")]
 
-        shot()
+        assert shot() == colored(
+            "Copied the following files to . successfully!\n['/tmp/tests/first']", "green"
+        )
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
@@ -71,13 +76,42 @@ class TestShot(unittest.TestCase):
 
         assert shot(dst="/tmp/output", dry_run=True) == "cp /tmp/tests/first /tmp/output"
 
+    @patch("os.path.getctime")
+    @patch("glob.glob")
+    @patch("subprocess.check_output")
+    def test_shot_move_dry_run(self, check_output_mock, glob_mock, getctime_mock):
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/first"]]
+        getctime_mock.returns(1)
+
+        assert shot(cmd="mv", dry_run=True) == "mv /tmp/tests/first ."
+
+    @patch("os.path.getctime")
+    @patch("glob.glob")
+    @patch("shutil.move")
+    @patch("subprocess.check_output")
+    def test_shot_move(self, check_output_mock, move_mock, glob_mock, getctime_mock):
+        """
+        should move the latest screenshot to the current directory
+        """
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/first"]]
+        getctime_mock.returns(1)
+
+        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
+        move_mock_calls = [call("/tmp/tests/first", ".")]
+
+        assert (
+            shot(cmd="mv", color=False)
+            == "Moved the following files to . successfully!\n['/tmp/tests/first']"
+        )
+        check_output_mock.assert_has_calls(check_output_calls)
+        move_mock.assert_has_calls(move_mock_calls)
+
 
 class TestShotErrorHandling(unittest.TestCase):
-    def test_n(self):
-        assert shot(n=0, color=False) == "n must be > 0. got:0\n"
-
-    def test_s(self):
-        assert shot(s=0, color=False) == "s must be > 0. got:0\n"
+    def test_cmd(self):
+        assert shot(cmd="asdf", color=False) == "cmd must be in ['cp', 'mv']. got:asdf\n"
 
     def test_src(self):
         assert (
@@ -91,11 +125,17 @@ class TestShotErrorHandling(unittest.TestCase):
             == "dst must be a directory. got:dir/that/does_not/exist\n"
         )
 
+    def test_s(self):
+        assert shot(s=0, color=False) == "s must be > 0. got:0\n"
+
+    def test_n(self):
+        assert shot(n=0, color=False) == "n must be > 0. got:0\n"
+
     def test_multiple_errors(self):
         """
         should show all errors together. don't make user find them one by one
         """
         assert (
-            shot(n=0, s=0, dst="foo", src="foo", color=False)
-            == "src must be a directory. got:foo\ndst must be a directory. got:foo\nn must be > 0. got:0\ns must be > 0. got:0\n"
+            shot(cmd="bar", n=0, s=0, dst="foo", src="foo", color=False)
+            == "cmd must be in ['cp', 'mv']. got:bar\nsrc must be a directory. got:foo\ndst must be a directory. got:foo\nn must be > 0. got:0\ns must be > 0. got:0\n"
         )

@@ -19,7 +19,6 @@ def _get_shell_output(args: List[str], encoding: str) -> str:
     return subprocess.check_output(args).decode(encoding).strip()
 
 
-# TODO: add enum for cmd, either cp or mv
 def shot(
     cmd: str = "cp",
     src: str = None,
@@ -49,6 +48,10 @@ def shot(
         return __version__
 
     err_msg = ""
+    accepted_cmds = ["cp", "mv"]
+    if cmd not in accepted_cmds:
+        err_msg += f"cmd must be in {accepted_cmds}. got:{cmd}\n"
+
     if src:
         src = os.path.expanduser(src)
         if not os.path.isdir(src):
@@ -102,8 +105,11 @@ def shot(
         err_msg = colored(err_msg, "red")
 
     try:
-        for file in screenshots_to_copy:
-            shutil.copy(file, dst)
+        for screenshot_to_copy in screenshots_to_copy:
+            if cmd == "cp":
+                shutil.copy(screenshot_to_copy, dst)
+            elif cmd == "mv":
+                shutil.move(screenshot_to_copy, dst)
         return success_msg
     except Exception as e:
         return err_msg
