@@ -9,6 +9,8 @@
 **O**SX  
 **T**erminal 
 
+Copy or move screenshots and recordings around from a terminal.
+
 # Install
 ```bash
 # option 1 homebrew
@@ -39,3 +41,6 @@ shot --cmd=mv --dest=./bar --s=2
 # output the command shot would run
 shot --cmd=something_that_does_not_exist --dry_run
 ```
+
+### Smaller bash implementation
+https://gist.github.com/ConorSheehan1/2a72b13fa530388dcaec93307f4f7b09
