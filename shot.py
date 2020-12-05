@@ -7,7 +7,7 @@ from typing import List
 
 # Third party
 import fire
-from termcolor import colored
+import termcolor
 
 commands = {"cp": "Copied", "mv": "Moved"}
 __version__ = "0.1.0"
@@ -47,6 +47,9 @@ def shot(
     if version:
         return __version__
 
+    if not color:
+        termcolor.colored = lambda message, color: message
+
     err_msg = ""
     accepted_cmds = ["cp", "mv"]
     if cmd not in accepted_cmds:
@@ -67,10 +70,7 @@ def shot(
         err_msg += f"s must be > 0. got:{s}\n"
 
     if err_msg:
-        if color:
-            err_msg = colored(err_msg, "red")
-
-        return err_msg
+        return termcolor.colored(err_msg, "red")
 
     if src:
         screenshot_dir = src
@@ -88,28 +88,24 @@ def shot(
     screenshots_to_copy = all_screenshots[s - 1 : s + n - 1]
 
     if len(screenshots_to_copy) < 1:
-        err_msg = f"No files found in {screenshot_dir_parsed}"
-        if color:
-            err_msg = colored(err_msg, "red")
-        return err_msg
+        return termcolor.colored(f"No files found in {screenshot_dir_parsed}", "red")
 
     if len(screenshots_to_copy) < n:
-        warning_msg = f"Warning: there are not enough files to copy with s:{s}, n:{n}"
-        if color:
-            warning_msg = colored(warning_msg, "yellow")
-        print(warning_msg)
+        print(
+            termcolor.colored(
+                f"Warning: there are not enough files to copy with s:{s}, n:{n}", "yellow"
+            )
+        )
 
     equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
     if dry_run:
         return equivalent_command
 
-    success_msg = (
-        f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}"
+    success_msg = termcolor.colored(
+        f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}",
+        "green",
     )
-    err_msg = f"{equivalent_command} failed"
-    if color:
-        success_msg = colored(success_msg, "green")
-        err_msg = colored(err_msg, "red")
+    err_msg = termcolor.colored(f"{equivalent_command} failed", "red")
 
     try:
         for screenshot_to_copy in screenshots_to_copy:
@@ -117,6 +113,7 @@ def shot(
                 shutil.copy(screenshot_to_copy, dst)
             elif cmd == "mv":
                 shutil.move(screenshot_to_copy, dst)
+            # no need for else, should be handled above by `if cmd not in accepted_cmds:`
         return success_msg
     except Exception as e:
         return err_msg
