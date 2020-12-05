@@ -11,6 +11,10 @@
 
 # Install
 ```bash
+# option 1 homebrew
+brew install conorsheehan1/conorsheehan1/shot
+
+# option 2 install from source
 git clone git@github.com:ConorSheehan1/shot.git
 cd shot
 poetry install
@@ -27,7 +31,7 @@ shot --version
 shot
 
 # copy the last 3 screenshots to ./foo
-shot --dest=./foo --n=3
+shot --dst=./foo --n=3
 
 # move the second last screenshot to ./bar
 shot --cmd=mv --dest=./bar --s=2
