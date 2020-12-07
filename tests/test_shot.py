@@ -30,7 +30,7 @@ class TestShot(unittest.TestCase):
     @patch("glob.glob")
     @patch("shutil.copy")
     @patch("subprocess.check_output")
-    def test_shot_default_args(self, check_output_mock, copy_mock, glob_mock):
+    def test_default_args(self, check_output_mock, copy_mock, glob_mock):
         """
         should copy the latest screenshot to the current directory
         """
@@ -48,7 +48,7 @@ class TestShot(unittest.TestCase):
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
-    def test_shot_dry_run(self, check_output_mock, glob_mock):
+    def test_dry_run(self, check_output_mock, glob_mock):
         """
         should show the command that would copy the latest screenshot to the current directory
         """
@@ -61,14 +61,14 @@ class TestShot(unittest.TestCase):
         check_output_mock.assert_has_calls(check_output_calls)
 
     @patch("glob.glob")
-    def test_shot_src(self, glob_mock):
+    def test_src(self, glob_mock):
         glob_mock.side_effect = [["/tmp/some/other/path"]]
 
         assert shot(src="/tmp/some/other/path", dry_run=True) == "cp /tmp/some/other/path ."
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
-    def test_shot_dst(self, check_output_mock, glob_mock):
+    def test_dst(self, check_output_mock, glob_mock):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
 
@@ -76,7 +76,7 @@ class TestShot(unittest.TestCase):
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
-    def test_shot_move_dry_run(self, check_output_mock, glob_mock):
+    def test_move_dry_run(self, check_output_mock, glob_mock):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
 
@@ -85,7 +85,7 @@ class TestShot(unittest.TestCase):
     @patch("glob.glob")
     @patch("shutil.move")
     @patch("subprocess.check_output")
-    def test_shot_move(self, check_output_mock, move_mock, glob_mock):
+    def test_move(self, check_output_mock, move_mock, glob_mock):
         """
         should move the latest screenshot to the current directory
         """
@@ -104,7 +104,7 @@ class TestShot(unittest.TestCase):
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
-    def test_shot_no_files(self, check_output_mock, glob_mock):
+    def test_no_files(self, check_output_mock, glob_mock):
         """
         should warn the user no files were found
         """
@@ -113,10 +113,34 @@ class TestShot(unittest.TestCase):
 
         assert shot(color=False) == "No files found in /tmp/tests/empty"
 
+    @patch("builtins.print")  # note print interferes with termcolor somehow, use color=False
     @patch("glob.glob")
     @patch("shutil.copy")
     @patch("subprocess.check_output")
-    def test_shot_s_and_n(self, check_output_mock, copy_mock, glob_mock):
+    def test_not_enough_files(self, check_output_mock, copy_mock, glob_mock, print_mock):
+        """
+        should warn the user there are not enough files, but still copy the ones available
+        """
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/1"]]
+
+        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
+        copy_mock_calls = [call("/tmp/tests/1", ".")]
+        print_mock_calls = [
+            call(colored("Warning: there are not enough files to copy with s:0, n:1", "yellow"))
+        ]
+
+        assert (
+            shot(n=2, color=False)
+            == "Copied the following files to . successfully!\n['/tmp/tests/1']"
+        )
+        check_output_mock.assert_has_calls(check_output_calls)
+        copy_mock.assert_has_calls(copy_mock_calls)
+
+    @patch("glob.glob")
+    @patch("shutil.copy")
+    @patch("subprocess.check_output")
+    def test_s_and_n(self, check_output_mock, copy_mock, glob_mock):
         """
         should copy the 2 latest screenshots, starting from the 2nd latest
         """
