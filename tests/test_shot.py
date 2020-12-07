@@ -13,12 +13,12 @@ class TestShot(unittest.TestCase):
     def setUp(self):
         self.isdir_patcher = patch("os.path.isdir")
         self.mock_isdir = self.isdir_patcher.start()
-        self.mock_isdir.returns(True)
+        self.mock_isdir.return_value = True
         self.addCleanup(self.isdir_patcher.stop)
 
         self.getctime_patcher = patch("os.path.getctime")
         self.mock_getctime = self.getctime_patcher.start()
-        self.mock_getctime.returns(1)
+        self.mock_getctime.return_value = 1  # keep original ordering
         self.addCleanup(self.getctime_patcher.stop)
 
     def test_version(self):
@@ -113,6 +113,26 @@ class TestShot(unittest.TestCase):
 
         assert shot(color=False) == "No files found in /tmp/tests/empty"
 
+    @patch("glob.glob")
+    @patch("shutil.copy")
+    @patch("subprocess.check_output")
+    def test_shot_s_and_n(self, check_output_mock, copy_mock, glob_mock):
+        """
+        should copy the 2 latest screenshots, starting from the 2nd latest
+        """
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/1", "/tmp/tests/2", "/tmp/tests/3", "/tmp/tests/4"]]
+
+        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
+        copy_mock_calls = [call("/tmp/tests/2", "."), call("/tmp/tests/3", ".")]
+
+        assert (
+            shot(s=2, n=2, color=False)
+            == "Copied the following files to . successfully!\n['/tmp/tests/2', '/tmp/tests/3']"
+        )
+        check_output_mock.assert_has_calls(check_output_calls)
+        copy_mock.assert_has_calls(copy_mock_calls)
+
 
 class TestShotErrorHandling(unittest.TestCase):
     def test_cmd(self):
@@ -142,5 +162,5 @@ class TestShotErrorHandling(unittest.TestCase):
         """
         assert (
             shot(cmd="bar", n=0, s=0, dst="foo", src="foo", color=False)
-            == "cmd must be in ['cp', 'mv']. got:bar\nsrc must be a directory. got:foo\ndst must be a directory. got:foo\nn must be > 0. got:0\ns must be > 0. got:0\n"
+            == "cmd must be in ['cp', 'mv']. got:bar\nsrc must be a directory. got:foo\ndst must be a directory. got:foo\ns must be > 0. got:0\nn must be > 0. got:0\n"
         )

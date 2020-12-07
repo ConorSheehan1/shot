@@ -37,7 +37,7 @@ def shot(
         cmd: command, either cp or mv to copy or move. Default: cp
         src: source directory. If None provided, find using apple defaults. Default: None
         dst: destination directory. Default: .
-        s: start at sth latest file. Default: 1
+        s: start at sth latest file, 1-indexed. Default: 1
         n: number of files to copy/move: Default: 1
         color: toggle color output. Default: True
         dry_run: if True show an equivalent command that would be run. Default: False
@@ -64,10 +64,10 @@ def shot(
     if not os.path.isdir(dst):
         err_msg += f"dst must be a directory. got:{dst}\n"
 
-    if n < 1:
-        err_msg += f"n must be > 0. got:{n}\n"
     if s < 1:
         err_msg += f"s must be > 0. got:{s}\n"
+    if n < 1:
+        err_msg += f"n must be > 0. got:{n}\n"
 
     if err_msg:
         return termcolor.colored(err_msg, "red")
