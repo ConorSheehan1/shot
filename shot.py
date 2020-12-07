@@ -48,7 +48,7 @@ def shot(
         return __version__
 
     if not color:
-        termcolor.colored = lambda message, color: message
+        termcolor.colored = lambda message, color: message  # type: ignore
 
     err_msg = ""
     accepted_cmds = ["cp", "mv"]
