@@ -7,7 +7,7 @@ from typing import List
 
 # Third party
 import fire
-from termcolor import colored
+import termcolor
 
 commands = {"cp": "Copied", "mv": "Moved"}
 __version__ = "0.1.0"
@@ -37,7 +37,7 @@ def shot(
         cmd: command, either cp or mv to copy or move. Default: cp
         src: source directory. If None provided, find using apple defaults. Default: None
         dst: destination directory. Default: .
-        s: start at sth latest file. Default: 1
+        s: start at sth latest file, 1-indexed. Default: 1
         n: number of files to copy/move: Default: 1
         color: toggle color output. Default: True
         dry_run: if True show an equivalent command that would be run. Default: False
@@ -46,6 +46,9 @@ def shot(
     """
     if version:
         return __version__
+
+    if not color:
+        termcolor.colored = lambda message, color: message  # type: ignore
 
     err_msg = ""
     accepted_cmds = ["cp", "mv"]
@@ -61,16 +64,13 @@ def shot(
     if not os.path.isdir(dst):
         err_msg += f"dst must be a directory. got:{dst}\n"
 
-    if n < 1:
-        err_msg += f"n must be > 0. got:{n}\n"
     if s < 1:
         err_msg += f"s must be > 0. got:{s}\n"
+    if n < 1:
+        err_msg += f"n must be > 0. got:{n}\n"
 
     if err_msg:
-        if color:
-            err_msg = colored(err_msg, "red")
-
-        return err_msg
+        return termcolor.colored(err_msg, "red")
 
     if src:
         screenshot_dir = src
@@ -88,28 +88,24 @@ def shot(
     screenshots_to_copy = all_screenshots[s - 1 : s + n - 1]
 
     if len(screenshots_to_copy) < 1:
-        err_msg = f"No files found in {screenshot_dir_parsed}"
-        if color:
-            err_msg = colored(err_msg, "red")
-        return err_msg
+        return termcolor.colored(f"No files found in {screenshot_dir_parsed}", "red")
 
     if len(screenshots_to_copy) < n:
-        warning_msg = f"Warning: there are not enough files to copy with s:{s}, n:{n}"
-        if color:
-            warning_msg = colored(warning_msg, "yellow")
-        print(warning_msg)
+        print(
+            termcolor.colored(
+                f"Warning: there are not enough files to copy with s:{s}, n:{n}", "yellow"
+            )
+        )
 
     equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
     if dry_run:
         return equivalent_command
 
-    success_msg = (
-        f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}"
+    success_msg = termcolor.colored(
+        f"{commands[cmd]} the following files to {dst} successfully!\n{screenshots_to_copy}",
+        "green",
     )
-    err_msg = f"{equivalent_command} failed"
-    if color:
-        success_msg = colored(success_msg, "green")
-        err_msg = colored(err_msg, "red")
+    err_msg = termcolor.colored(f"{equivalent_command} failed", "red")
 
     try:
         for screenshot_to_copy in screenshots_to_copy:
@@ -117,6 +113,7 @@ def shot(
                 shutil.copy(screenshot_to_copy, dst)
             elif cmd == "mv":
                 shutil.move(screenshot_to_copy, dst)
+            # no need for else, should be handled above by `if cmd not in accepted_cmds:`
         return success_msg
     except Exception as e:
         return err_msg
