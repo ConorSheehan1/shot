@@ -1,0 +1,62 @@
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build:
+    name: Upload Release Assets
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install python packages
+        run: |
+          poetry install
+      - name: Build package
+        run: |
+          poetry build
+      # - name: Parse version
+      #   run: |
+      #     echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
+        # run: |
+          # export version=$(grep -oP "(?<=^version = \")(.+)(?=\")" pyproject.toml)
+          # echo "::set-env name=version::$version"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ GITHUB_REF#refs/tags/ }}
+          release_name: Release ${{ GITHUB_REF#refs/tags/ }}
+          draft: true # TODO: false
+          prerelease: true # TODO: false
+      - name: Upload tar.gz to Release
+        id: upload-tar 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          # asset_path: ./shot-${GITHUB_REF##*/}.tar.gz
+          asset_path: ./shot-${{ GITHUB_REF#refs/tags/ }}.tar.gz
+          asset_name: shot-${{ GITHUB_REF#refs/tags/ }}.tar.gz
+          asset_content_type: application/tar+gz
+      - name: Upload wheel to Release
+        id: upload-wheel 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./shot-${{ GITHUB_REF#refs/tags/ }}-py3-none-any.whl
+          asset_name: shot-${{ GITHUB_REF#refs/tags/ }}-py3-none-any.whl
+          asset_content_type: application/x-pywheel+zip

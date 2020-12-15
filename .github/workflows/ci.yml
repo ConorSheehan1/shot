@@ -14,27 +14,27 @@ jobs:
         python: [3.6, 3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install Poetry
-      run: |
-        python -m pip install --upgrade pip
-        pip install poetry
-    - name: Install python packages
-      run: |
-        poetry install
-    - name: Run tests
-      run: |
-        poetry run task tests
-    - name: Lint black
-      run: |
-        poetry run task ci_lint
-    - name: Lint isort
-      run: |
-        poetry run task ci_isort
-    - name: Lint mypy
-      run: |
-        poetry run task mypy
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install python packages
+        run: |
+          poetry install
+      - name: Run tests
+        run: |
+          poetry run task tests
+      - name: Lint black
+        run: |
+          poetry run task ci_lint
+      - name: Lint isort
+        run: |
+          poetry run task ci_isort
+      - name: Lint mypy
+        run: |
+          poetry run task mypy
