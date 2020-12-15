@@ -32,8 +32,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.version.outputs.version }} 
-          release_name: Release ${{ steps.version.outputs.version }} 
+          tag_name: ${{ github.ref }} 
+          release_name: Release ${{ github.ref }} 
           draft: true # TODO: false
           prerelease: true # TODO: false
       - name: Upload tar.gz to Release
