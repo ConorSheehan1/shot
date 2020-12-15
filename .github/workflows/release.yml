@@ -1,7 +1,9 @@
+name: release
+
 on:
   push:
     tags:
-    - '*'
+      - '*'
 
 jobs:
   build:
@@ -18,14 +20,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
       - name: Install python packages
-        run: |
-          poetry install
+        run: poetry install
       - name: Build package
-        run: |
-          poetry build
-      # - name: Parse version
-      #   run: |
-      #     echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
+        run: poetry build
+      - name: Parse version
+        id: version
+        run: echo ::set-output name=version::${{ steps.version.outputs.version }} 
+        # run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
         # run: |
           # export version=$(grep -oP "(?<=^version = \")(.+)(?=\")" pyproject.toml)
           # echo "::set-env name=version::$version"
@@ -35,8 +36,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ GITHUB_REF#refs/tags/ }}
-          release_name: Release ${{ GITHUB_REF#refs/tags/ }}
+          tag_name: ${{ steps.version.outputs.version }} 
+          release_name: Release ${{ steps.version.outputs.version }} 
           draft: true # TODO: false
           prerelease: true # TODO: false
       - name: Upload tar.gz to Release
@@ -47,8 +48,8 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           # asset_path: ./shot-${GITHUB_REF##*/}.tar.gz
-          asset_path: ./shot-${{ GITHUB_REF#refs/tags/ }}.tar.gz
-          asset_name: shot-${{ GITHUB_REF#refs/tags/ }}.tar.gz
+          asset_path: ./shot-${{ steps.version.outputs.version }}.tar.gz
+          asset_name: shot-${{ steps.version.outputs.version }}.tar.gz
           asset_content_type: application/tar+gz
       - name: Upload wheel to Release
         id: upload-wheel 
@@ -57,6 +58,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./shot-${{ GITHUB_REF#refs/tags/ }}-py3-none-any.whl
-          asset_name: shot-${{ GITHUB_REF#refs/tags/ }}-py3-none-any.whl
+          asset_path: ./shot-${{ steps.version.outputs.version }}-py3-none-any.whl
+          asset_name: shot-${{ steps.version.outputs.version }}-py3-none-any.whl
           asset_content_type: application/x-pywheel+zip
