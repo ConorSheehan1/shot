@@ -30,13 +30,7 @@ jobs:
       - name: Install python packages
         run: poetry install
       - name: Build package
-        run: |
-          poetry build
-          cp ${{ steps.file_names.outputs.tar_file }} $GITHUB_WORKSPACE/${{ steps.file_names.outputs.tar_file }}
-          cp ${{ steps.file_names.outputs.wheel_file }} $GITHUB_WORKSPACE/${{ steps.file_names.outputs.wheel_file }}
-
-      - name: List file
-        run: ls
+        run: poetry build
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
