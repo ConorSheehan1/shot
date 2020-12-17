@@ -15,6 +15,14 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
+      - name: Parse version
+        id: version
+        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v}
+      - name: Generate expected file names
+        id: file_names
+        run: |
+          echo ::set-output name=tar_file::shot-${{ steps.version.outputs.version }}.tar.gz
+          echo ::set-output name=wheel_file::shot-${{ steps.version.outputs.version }}-py3-none-any.whl
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
@@ -22,10 +30,13 @@ jobs:
       - name: Install python packages
         run: poetry install
       - name: Build package
-        run: poetry build
-      - name: Parse version
-        id: version
-        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v}
+        run: |
+          poetry build
+          cp ${{ steps.file_names.outputs.tar_file }} $GITHUB_WORKSPACE/${{ steps.file_names.outputs.tar_file }}
+          cp ${{ steps.file_names.outputs.wheel_file }} $GITHUB_WORKSPACE/${{ steps.file_names.outputs.wheel_file }}
+
+      - name: List file
+        run: ls
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -43,8 +54,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./shot-${{ steps.version.outputs.version }}.tar.gz
-          asset_name: shot-${{ steps.version.outputs.version }}.tar.gz
+          asset_path: ${{ steps.file_names.outputs.tar_file }}
+          asset_name: ${{ steps.file_names.outputs.tar_file }}
           asset_content_type: application/tar+gz
       - name: Upload wheel to Release
         id: upload-wheel 
@@ -53,6 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./shot-${{ steps.version.outputs.version }}-py3-none-any.whl
-          asset_name: shot-${{ steps.version.outputs.version }}-py3-none-any.whl
+          asset_path: ${{ steps.file_names.outputs.wheel_file }}
+          asset_name: ${{ steps.file_names.outputs.wheel_file }}
           asset_content_type: application/x-pywheel+zip
