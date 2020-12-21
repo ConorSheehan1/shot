@@ -34,8 +34,8 @@ jobs:
       - name: Generate SHAs
         id: sha
         run: |
-          echo ::set-output name=tar_sha::"${{ steps.file_names.outputs.tar_file }} SHA256: $(shasum -a 256 ${{ steps.file_names.outputs.tar_file }})"
-          echo ::set-output name=wheel_sha::"${{ steps.file_names.outputs.wheel_file }} SHA256: $(shasum -a 256 ${{ steps.file_names.outputs.wheel_file }})"
+          echo ::set-output name=tar_sha::"${{ steps.file_names.outputs.tar_file }} SHA256: $(shasum -a 256 dist/${{ steps.file_names.outputs.tar_file }})"
+          echo ::set-output name=wheel_sha::"${{ steps.file_names.outputs.wheel_file }} SHA256: $(shasum -a 256 dist/${{ steps.file_names.outputs.wheel_file }})"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
