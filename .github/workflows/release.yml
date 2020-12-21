@@ -31,6 +31,11 @@ jobs:
         run: poetry install
       - name: Build package
         run: poetry build
+      - name: Generate SHAs
+        id: sha
+        run: |
+          echo ::set-output name=tar_sha::"${{ steps.file_names.outputs.tar_file }} SHA256: $(shasum -a 256 ${{ steps.file_names.outputs.tar_file }})"
+          echo ::set-output name=wheel_sha::"${{ steps.file_names.outputs.wheel_file }} SHA256: $(shasum -a 256 ${{ steps.file_names.outputs.wheel_file }})"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -41,6 +46,9 @@ jobs:
           release_name: Release ${{ github.ref }} 
           draft: true
           prerelease: true
+          body: |
+            - ${{ steps.sha.tar_sha }}
+            - ${{ steps.sha.wheel_sha }}
       - name: Upload tar.gz to Release
         id: upload-tar 
         uses: actions/upload-release-asset@v1
