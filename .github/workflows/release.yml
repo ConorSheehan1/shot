@@ -39,8 +39,8 @@ jobs:
         with:
           tag_name: ${{ github.ref }} 
           release_name: Release ${{ github.ref }} 
-          draft: true # TODO: false
-          prerelease: true # TODO: false
+          draft: true
+          prerelease: true
       - name: Upload tar.gz to Release
         id: upload-tar 
         uses: actions/upload-release-asset@v1
