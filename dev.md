@@ -29,7 +29,6 @@ poetry run task isort
 ```bash
 # pass args e.g. patch, minor, major, choose to commit changes or not
 poetry run bumpversion --commit --tag patch
-# note test_version needs to be updated manually.
 # once the tag is built by the release action, check the attached .tar is installable.
 # e.g. `pip install git+https://github.com/ConorSheehan1/shot@v0.1.1`
 # if it is update the release draft and pre-release state.
