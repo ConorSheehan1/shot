@@ -47,8 +47,8 @@ jobs:
           draft: true
           prerelease: true
           body: |
-            - ${{ steps.sha.tar_sha }}
-            - ${{ steps.sha.wheel_sha }}
+            - ${{ steps.sha.outputs.tar_sha }}
+            - ${{ steps.sha.outputs.wheel_sha }}
       - name: Upload tar.gz to Release
         id: upload-tar 
         uses: actions/upload-release-asset@v1
