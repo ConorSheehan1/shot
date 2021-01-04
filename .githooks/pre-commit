@@ -1,0 +1,25 @@
+#!/bin/bash
+
+ret=0
+message=""
+
+# if ci_lint doesn't return 0
+if ! poetry run task ci_lint; then
+    ((ret+=1))
+    message="poetry run task lint"
+fi
+
+# if ci_isort doesn't return 0
+if ! poetry run task ci_isort; then
+    ((ret+=1))
+    message="$message; poetry run task isort"
+fi
+
+# if mypy doesn't return 0
+if ! poetry run task mypy; then
+    ((ret+=1))
+    message="$message; mypy error, needs to be resolved manually."
+fi
+
+echo "To fix run the following: $message"
+exit $ret
