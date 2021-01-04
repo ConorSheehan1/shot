@@ -10,10 +10,6 @@ from shot import shot
 
 
 class TestShot(unittest.TestCase):
-    """
-    Unit tests that don't hit file system at all. Calls are stubbed.
-    """
-
     def setUp(self):
         self.isdir_patcher = patch("os.path.isdir")
         self.mock_isdir = self.isdir_patcher.start()
@@ -47,23 +43,6 @@ class TestShot(unittest.TestCase):
         assert shot() == colored(
             "Copied the following files to . successfully!\n['/tmp/tests/first']", "green"
         )
-        check_output_mock.assert_has_calls(check_output_calls)
-        copy_mock.assert_has_calls(copy_mock_calls)
-
-    @patch("glob.glob")
-    @patch("shutil.copy")
-    @patch("subprocess.check_output")
-    def test_quiet(self, check_output_mock, copy_mock, glob_mock):
-        """
-        should copy the latest screenshot to the current directory, without printing any messages
-        """
-        check_output_mock.side_effect = [b"/tmp/tests\n"]
-        glob_mock.side_effect = [["/tmp/tests/first"]]
-
-        check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
-        copy_mock_calls = [call("/tmp/tests/first", ".")]
-
-        assert shot(q=True) == None
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
