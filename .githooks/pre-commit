@@ -21,5 +21,8 @@ if ! poetry run task mypy; then
     message="$message; mypy error, needs to be resolved manually."
 fi
 
-echo "To fix run the following: $message"
+if [ "$ret" -ne "0" ]; then
+    echo "To fix run the following: $message"
+fi
+
 exit $ret
