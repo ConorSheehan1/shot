@@ -58,7 +58,7 @@ line_length = 100
 
 # cli entrypoint
 [tool.poetry.scripts]
-shot = "shot:shot"
+shot = "shot:main"
 
 [build-system]
 requires = ["poetry>=0.12"]
