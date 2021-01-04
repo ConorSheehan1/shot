@@ -11,6 +11,8 @@
 
 Copy or move screenshots and recordings around from a terminal.
 
+![shot](./.github/images/shot.png)
+
 # Install
 ```bash
 # option 1 homebrew
