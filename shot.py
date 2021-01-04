@@ -20,9 +20,9 @@ def _get_shell_output(args: List[str], encoding: str) -> str:
 
 
 def shot(
-    cmd: str = "cp",
     src: str = None,
     dst: str = ".",
+    mv: bool = False,
     s: int = 1,
     n: int = 1,
     color: bool = True,
@@ -34,9 +34,9 @@ def shot(
     Screenshot Helper for OSX Terminal
 
     Args:
-        cmd: command, either cp or mv to copy or move. Default: cp
         src: source directory. If None provided, find using apple defaults. Default: None
         dst: destination directory. Default: .
+        mv: move the file instead of copying it. Default: False
         s: start at sth latest file, 1-indexed. Default: 1
         n: number of files to copy/move: Default: 1
         color: toggle color output. Default: True
@@ -50,10 +50,9 @@ def shot(
     if not color:
         termcolor.colored = lambda message, color: message  # type: ignore
 
+    cmd = "mv" if mv else "cp"
+
     err_msg = ""
-    accepted_cmds = ["cp", "mv"]
-    if cmd not in accepted_cmds:
-        err_msg += f"cmd must be in {accepted_cmds}. got:{cmd}\n"
 
     if src:
         src = os.path.expanduser(src)
@@ -119,5 +118,9 @@ def shot(
         return err_msg
 
 
-if __name__ == "__main__":
+def main():
     fire.Fire(shot)
+
+
+if __name__ == "__main__":
+    main()
