@@ -80,7 +80,7 @@ class TestShot(unittest.TestCase):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
 
-        assert shot(cmd="mv", dry_run=True) == "mv /tmp/tests/first ."
+        assert shot(mv=True, dry_run=True) == "mv /tmp/tests/first ."
 
     @patch("glob.glob")
     @patch("shutil.move")
@@ -96,7 +96,7 @@ class TestShot(unittest.TestCase):
         move_mock_calls = [call("/tmp/tests/first", ".")]
 
         assert (
-            shot(cmd="mv", color=False)
+            shot(mv=True, color=False)
             == "Moved the following files to . successfully!\n['/tmp/tests/first']"
         )
         check_output_mock.assert_has_calls(check_output_calls)
@@ -159,9 +159,6 @@ class TestShot(unittest.TestCase):
 
 
 class TestShotErrorHandling(unittest.TestCase):
-    def test_cmd(self):
-        assert shot(cmd="asdf", color=False) == "cmd must be in ['cp', 'mv']. got:asdf\n"
-
     def test_src(self):
         assert (
             shot(src="dir/that/does_not/exist", color=False)
@@ -185,6 +182,6 @@ class TestShotErrorHandling(unittest.TestCase):
         should show all errors together. don't make user find them one by one
         """
         assert (
-            shot(cmd="bar", n=0, s=0, dst="foo", src="foo", color=False)
-            == "cmd must be in ['cp', 'mv']. got:bar\nsrc must be a directory. got:foo\ndst must be a directory. got:foo\ns must be > 0. got:0\nn must be > 0. got:0\n"
+            shot(n=0, s=0, dst="foo", src="foo", color=False)
+            == "src must be a directory. got:foo\ndst must be a directory. got:foo\ns must be > 0. got:0\nn must be > 0. got:0\n"
         )

@@ -36,10 +36,7 @@ shot
 shot --dst=./foo --n=3
 
 # move the second last screenshot to ./bar
-shot --cmd=mv --dest=./bar --s=2
-
-# output the command shot would run
-shot --cmd=something_that_does_not_exist --dry_run
+shot --mv --dest=./bar --s=2
 ```
 
 ### Smaller bash implementation
