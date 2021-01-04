@@ -2,6 +2,12 @@ name: ci
 
 on:
   push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*.*' # don't run ci on tags, should already have run on commit tag points to.
+    paths-ignore:
+      - README.md # don't run for readme changes.
   schedule:
     - cron: '0 0 * * 1' # Every monday at midnight
 
