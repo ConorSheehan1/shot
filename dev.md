@@ -9,6 +9,12 @@ poetry install
 poetry run task dev
 ```
 
+#### Git hooks
+```bash
+poetry run task install_hooks
+# use --force to overwrite hooks if they already exist
+```
+
 #### Tests
 ```bash
 poetry run task tests
