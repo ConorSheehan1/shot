@@ -10,7 +10,7 @@ import fire
 import termcolor
 
 commands = {"cp": "Copied", "mv": "Moved"}
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 def _get_shell_output(args: List[str], encoding: str) -> str:
