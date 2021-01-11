@@ -26,23 +26,27 @@ def shot(
     s: int = 1,
     n: int = 1,
     color: bool = True,
+    q: bool = False,
     dry_run: bool = False,
+    debug: bool = False,
     encoding: str = "utf-8",
     version: bool = False,
-) -> str:
+):
     """
     Screenshot Helper for OSX Terminal
 
     Args:
-        src: source directory. If None provided, find using apple defaults. Default: None
-        dst: destination directory. Default: .
-        mv: move the file instead of copying it. Default: False
-        s: start at sth latest file, 1-indexed. Default: 1
-        n: number of files to copy/move: Default: 1
-        color: toggle color output. Default: True
-        dry_run: if True show an equivalent command that would be run. Default: False
-        encoding: encoding to use for shell. Default: utf-8
-        version: if True show version, else run shot. Default: False
+        src:      source directory. If None provided, find using apple defaults. Default: None
+        dst:      destination directory.                                         Default: .
+        mv:       move the file instead of copying it.                           Default: False
+        s:        start at sth latest file, 1-indexed.                           Default: 1
+        n:        number of files to copy/move:                                  Default: 1
+        color:    toggle color output.                                           Default: True
+        q:        quiet mode, print less things to the console.                  Default: False
+        dry_run:  if True show an equivalent command that would be run.          Default: False
+        debug:    raise error with full stack trace. otherwise print warning.    Default: False
+        encoding: encoding to use for shell.                                     Default: utf-8
+        version:  if True show version, else run shot.                           Default: False
     """
     if version:
         return __version__
@@ -113,9 +117,14 @@ def shot(
             elif cmd == "mv":
                 shutil.move(screenshot_to_copy, dst)
             # no need for else, should be handled above by `if cmd not in accepted_cmds:`
-        return success_msg
+        if not q:
+            return success_msg
     except Exception as e:
-        return err_msg
+        print(err_msg)
+        if debug:
+            raise e
+        else:
+            raise SystemExit(1)
 
 
 def main():
