@@ -2,50 +2,53 @@
 import os
 import unittest
 
+# Third party
+import pytest
+
 # shot
 from shot import shot
 
 
-# TODO: try https://docs.pytest.org/en/latest/tmpdir.html
-class TestShot(unittest.TestCase):
+def setup_dirs(tmp_path):
+    src_dir = tmp_path / "src"
+    dst_dir = tmp_path / "dst"
+
+    src_dir.mkdir()
+    dst_dir.mkdir()
+
+    src_file = src_dir / "foo.txt"
+    src_file.write_text("foo")
+    return src_dir, dst_dir, src_file
+
+
+def test_copy(tmp_path):
+    src_dir, dst_dir, src_file = setup_dirs(tmp_path)
+    expected_output_path = dst_dir / "foo.txt"
+
+    assert os.path.exists(expected_output_path) == False
+    shot(src=str(src_dir), dst=str(dst_dir))
+    assert os.path.exists(expected_output_path) == True
+
+
+def test_debug_cp_file_exists(tmp_path):
     """
-    Integration tests do no stub function. Runs calls that hit file system.
+    should fail because src and dest are the same.
+    latest file will be foo, will fail to copy since it already exists.
     """
+    src_dir, dst_dir, src_file = setup_dirs(tmp_path)
+    with pytest.raises(Exception) as context:
+        shot(src=str(src_dir), dst=str(src_dir), debug=True)
 
-    def setUp(self):
-        self.expected_output_path = os.path.join("tests", "fixtures", "dst", "foo.txt")
+    assert f"'{src_file}' and '{src_file}' are the same file" in context.value.args
 
-    def tearDown(self):
-        # clean up output after tests
-        if os.path.exists(self.expected_output_path):
-            os.remove(self.expected_output_path)
 
-    def test_copy(self):
-        self.assertFalse(os.path.exists(self.expected_output_path))
-        shot(src="tests/fixtures/src", dst="tests/fixtures/dst")
-        self.assertTrue(os.path.exists(self.expected_output_path))
+def test_debug_mv_file_exists(tmp_path):
+    """
+    should fail because src and dest are the same.
+    latest file will be foo, will fail to copy since it already exists.
+    """
+    src_dir, dst_dir, src_file = setup_dirs(tmp_path)
+    with pytest.raises(Exception) as context:
+        shot(src=str(src_dir), dst=str(src_dir), mv=True, debug=True)
 
-    def test_debug_cp_file_exists(self):
-        """
-        should fail because src and dest are the same.
-        latest file will be foo, will fail to copy since it already exists.
-        """
-        with self.assertRaises(Exception) as context:
-            shot(src="tests/fixtures/src", dst="tests/fixtures/src", debug=True)
-
-        self.assertIn(
-            "'tests/fixtures/src/foo.txt' and 'tests/fixtures/src/foo.txt' are the same file",
-            context.exception.args,
-        )
-
-    def test_debug_mv_file_exists(self):
-        """
-        should fail because src and dest are the same.
-        latest file will be foo, will fail to copy since it already exists.
-        """
-        with self.assertRaises(Exception) as context:
-            shot(src="tests/fixtures/src", dst="tests/fixtures/src", mv=True, debug=True)
-
-        self.assertIn(
-            "Destination path 'tests/fixtures/src/foo.txt' already exists", context.exception.args
-        )
+    assert f"Destination path '{src_file}' already exists" in context.value.args
