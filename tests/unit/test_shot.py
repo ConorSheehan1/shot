@@ -63,7 +63,7 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/first", ".")]
 
-        assert shot(q=True) == None
+        assert shot(quiet=True) == None
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
@@ -148,11 +148,13 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/1", ".")]
         print_mock_calls = [
-            call(colored("Warning: there are not enough files to copy with s:0, n:1", "yellow"))
+            call(
+                colored("Warning: there are not enough files to copy with start:0, num:1", "yellow")
+            )
         ]
 
         assert (
-            shot(n=2, color=False)
+            shot(num=2, color=False)
             == "Copied the following files to . successfully!\n['/tmp/tests/1']"
         )
         check_output_mock.assert_has_calls(check_output_calls)
@@ -172,7 +174,7 @@ class TestShot(unittest.TestCase):
         copy_mock_calls = [call("/tmp/tests/2", "."), call("/tmp/tests/3", ".")]
 
         assert (
-            shot(s=2, n=2, color=False)
+            shot(start=2, num=2, color=False)
             == "Copied the following files to . successfully!\n['/tmp/tests/2', '/tmp/tests/3']"
         )
         check_output_mock.assert_has_calls(check_output_calls)
@@ -193,16 +195,16 @@ class TestShotErrorHandling(unittest.TestCase):
         )
 
     def test_s(self):
-        assert shot(s=0, color=False) == "s must be > 0. got:0\n"
+        assert shot(start=0, color=False) == "start must be > 0. got:0\n"
 
     def test_n(self):
-        assert shot(n=0, color=False) == "n must be > 0. got:0\n"
+        assert shot(num=0, color=False) == "num must be > 0. got:0\n"
 
     def test_multiple_errors(self):
         """
         should show all errors together. don't make user find them one by one
         """
         assert (
-            shot(n=0, s=0, dst="foo", src="foo", color=False)
-            == "src must be a directory. got:foo\ndst must be a directory. got:foo\ns must be > 0. got:0\nn must be > 0. got:0\n"
+            shot(num=0, start=0, dst="foo", src="foo", color=False)
+            == "src must be a directory. got:foo\ndst must be a directory. got:foo\nstart must be > 0. got:0\nnum must be > 0. got:0\n"
         )

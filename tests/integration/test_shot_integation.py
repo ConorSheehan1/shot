@@ -30,9 +30,21 @@ def test_copy(tmp_path):
     assert os.path.exists(expected_output_path) == True
 
 
+def test_cp_file_exists(tmp_path):
+    """
+    should fail because src and dst are the same.
+    print error and systemexist.
+    """
+    src_dir, dst_dir, src_file = setup_dirs(tmp_path)
+    with pytest.raises(SystemExit) as context:
+        shot(src=str(src_dir), dst=str(src_dir))
+
+    assert (1,) == context.value.args
+
+
 def test_debug_cp_file_exists(tmp_path):
     """
-    should fail because src and dest are the same.
+    should fail because src and dst are the same.
     latest file will be foo, will fail to copy since it already exists.
     """
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
@@ -44,7 +56,7 @@ def test_debug_cp_file_exists(tmp_path):
 
 def test_debug_mv_file_exists(tmp_path):
     """
-    should fail because src and dest are the same.
+    should fail because src and dst are the same.
     latest file will be foo, will fail to copy since it already exists.
     """
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
