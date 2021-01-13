@@ -18,7 +18,11 @@ Copy or move screenshots and recordings around from a terminal.
 # option 1 homebrew
 brew install conorsheehan1/conorsheehan1/shot
 
-# option 2 install from source
+# option 2 github release
+# https://github.com/ConorSheehan1/shot/releases e.g.
+pip install https://github.com/ConorSheehan1/shot/releases/download/v0.1.2/shot-0.1.2.tar.gz
+
+# option 3 from source
 git clone git@github.com:ConorSheehan1/shot.git
 cd shot
 poetry install
