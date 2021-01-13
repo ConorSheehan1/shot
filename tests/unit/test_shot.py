@@ -190,7 +190,7 @@ class TestShotErrorHandling(unittest.TestCase):
 
     def test_dst(self):
         assert (
-            shot(dst="dir/that/does_not/exist", color=False)
+            shot(dst="dir/that/does_not/exist", num=2, color=False)
             == "dst must be a directory. got:dir/that/does_not/exist\n"
         )
 
@@ -202,9 +202,12 @@ class TestShotErrorHandling(unittest.TestCase):
 
     def test_multiple_errors(self):
         """
-        should show all errors together. don't make user find them one by one
+        should show all errors together. don't make user find them one by one.
+        note after #12 dst error is only raised when num > 1.
+        e.g. num=1, dst can be file or directory. if not exists, will create file.
+             num=2, dst must be directory.
         """
         assert (
             shot(num=0, start=0, dst="foo", src="foo", color=False)
-            == "src must be a directory. got:foo\ndst must be a directory. got:foo\nstart must be > 0. got:0\nnum must be > 0. got:0\n"
+            == "src must be a directory. got:foo\nstart must be > 0. got:0\nnum must be > 0. got:0\n"
         )
