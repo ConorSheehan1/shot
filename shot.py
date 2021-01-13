@@ -64,7 +64,8 @@ def shot(
             err_msg += f"src must be a directory. got:{src}\n"
 
     dst = os.path.expanduser(dst)
-    if not os.path.isdir(dst):
+
+    if num > 1 and not os.path.isdir(dst):
         err_msg += f"dst must be a directory. got:{dst}\n"
 
     if start < 1:

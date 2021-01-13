@@ -21,7 +21,7 @@ def setup_dirs(tmp_path):
     return src_dir, dst_dir, src_file
 
 
-def test_copy(tmp_path):
+def test_cp(tmp_path):
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
     expected_output_path = dst_dir / "foo.txt"
 
@@ -64,3 +64,12 @@ def test_debug_mv_file_exists(tmp_path):
         shot(src=str(src_dir), dst=str(src_dir), mv=True, debug=True)
 
     assert f"Destination path '{src_file}' already exists" in context.value.args
+
+
+def test_cp_to_file(tmp_path):
+    src_dir, dst_dir, src_file = setup_dirs(tmp_path)
+    expected_output_path = dst_dir / "bar.txt"
+
+    assert os.path.exists(expected_output_path) == False
+    shot(src=str(src_dir), dst=str(expected_output_path))
+    assert os.path.exists(expected_output_path) == True
