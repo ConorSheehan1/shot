@@ -29,7 +29,7 @@ class TestShot(unittest.TestCase):
         """
         should return the version
         """
-        assert shot(version=True) == "0.1.2"
+        assert shot(version=True) == "1.0.0"
 
     @patch("glob.glob")
     @patch("shutil.copy")
