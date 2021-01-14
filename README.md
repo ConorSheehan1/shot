@@ -39,10 +39,13 @@ shot --version
 shot
 
 # copy the last 3 screenshots to ./foo
-shot --dst=./foo --n=3
+shot --dst=./foo --num=3
+
+# short args are added automatically when unambiguous e.g. -n and --num
+shot -dst ./foo -n 3
 
 # move the second last screenshot to ./bar
-shot --mv --dest=./bar --s=2
+shot --mv --dst=./bar --start=2
 ```
 
 ### Smaller bash implementation
