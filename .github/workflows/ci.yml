@@ -1,6 +1,8 @@
 name: ci
 
 on:
+  # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+  workflow_dispatch:
   push:
     branches:
       - '**'
@@ -8,6 +10,9 @@ on:
       - '*.*' # don't run ci on tags, should already have run on commit tag points to.
     paths-ignore:
       - README.md # don't run for readme changes.
+  pull_request:
+    branches:
+      - 'dependabot*'
   schedule:
     - cron: '0 0 * * 1' # Every monday at midnight
 
