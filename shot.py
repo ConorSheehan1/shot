@@ -7,7 +7,8 @@ from typing import List
 
 # Third party
 import fire
-import termcolor
+import termcolor  # TODO: replace termcolor with rich
+from rich.prompt import Prompt
 
 commands = {"cp": "Copied", "mv": "Moved"}
 __version__ = "1.0.0"
@@ -25,6 +26,7 @@ def shot(
     mv: bool = False,
     start: int = 1,
     num: int = 1,
+    yes: bool = False,
     color: bool = True,
     quiet: bool = False,
     dry_run: bool = False,
@@ -41,6 +43,7 @@ def shot(
         mv:       move the file instead of copying it.                            Default: False
         start:    file to start at. 1 = copy latest file. 2 = copy second latest. Default: 1
         num:      number of files to copy/move.                                   Default: 1
+        yes:      answer yes to all prompts if True.                              Default: False
         color:    toggle color output.                                            Default: True
         quiet:    quiet mode, print less things to the console.                   Default: False
         dry_run:  if True show an equivalent bash command that would be run.      Default: False
@@ -101,6 +104,8 @@ def shot(
                 "yellow",
             )
         )
+        if not yes and Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "n":
+            return
 
     equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
     if dry_run:

@@ -138,7 +138,7 @@ class TestShot(unittest.TestCase):
     @patch("glob.glob")
     @patch("shutil.copy")
     @patch("subprocess.check_output")
-    def test_not_enough_files(self, check_output_mock, copy_mock, glob_mock, print_mock):
+    def test_not_enough_files_yes(self, check_output_mock, copy_mock, glob_mock, print_mock):
         """
         should warn the user there are not enough files, but still copy the ones available
         """
@@ -154,7 +154,7 @@ class TestShot(unittest.TestCase):
         ]
 
         assert (
-            shot(num=2, color=False)
+            shot(num=2, color=False, yes=True)
             == "Copied the following files to . successfully!\n['/tmp/tests/1']"
         )
         check_output_mock.assert_has_calls(check_output_calls)

@@ -22,6 +22,7 @@ termcolor = "^1.1.0"
 
 # should be dev-extras https://github.com/python-poetry/poetry/issues/1644
 # can't have dev optionals https://github.com/python-poetry/poetry/pull/606
+rich = "^9.12.4"
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
 bump2version = "*"
