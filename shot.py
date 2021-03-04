@@ -20,6 +20,27 @@ def _get_shell_output(args: List[str], encoding: str) -> str:
     return subprocess.check_output(args).decode(encoding).strip()
 
 
+def _confirm() -> bool:
+    return Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "y"
+
+
+# TODO: test _confirm_extension
+def _confirm_extension(src: str, dst: str) -> bool:
+    if os.path.isdir(dst):
+        return True
+
+    src_ext, dst_ext = map(lambda x: os.path.splitext(x)[1], [src, dst])
+    if src_ext == dst_ext:
+        return True
+
+    print(
+        termcolor.colored(
+            f"src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}", "yellow"
+        )
+    )
+    return _confirm()
+
+
 def shot(
     src: str = None,
     dst: str = ".",
@@ -58,7 +79,6 @@ def shot(
         termcolor.colored = lambda message, color: message  # type: ignore
 
     cmd = "mv" if mv else "cp"
-
     err_msg = ""
 
     if src:
@@ -104,7 +124,7 @@ def shot(
                 "yellow",
             )
         )
-        if not yes and Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "n":
+        if not yes and not _confirm():
             return
 
     equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
@@ -119,6 +139,8 @@ def shot(
 
     try:
         for screenshot_to_copy in screenshots_to_copy:
+            if not _confirm_extension(screenshot_to_copy, dst):
+                return
             if cmd == "cp":
                 shutil.copy(screenshot_to_copy, dst)
             elif cmd == "mv":
