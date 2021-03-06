@@ -71,8 +71,7 @@ class Shot:
         # e.g. b'700aa82a2b0c\n' -> '700aa82a2b0c'
         return subprocess.check_output(args).decode(self.encoding).strip()
 
-    # TODO: test _confirm_extension
-    def _confirm_extension(self, screenshot) -> bool:
+    def _confirm_extension(self, screenshot: str) -> bool:
         if os.path.isdir(self.dst):
             return True
 
@@ -82,9 +81,13 @@ class Shot:
 
         print(
             termcolor.colored(
-                f"src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}", "yellow"
+                f"Warning: src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}",
+                "yellow",
             )
         )
+        if self.yes:
+            return True
+
         return _confirm()
 
     def _validate_args(self) -> str:

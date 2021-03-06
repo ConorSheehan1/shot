@@ -44,9 +44,11 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/first", ".")]
 
-        assert Shot()() == colored(
+        actual = Shot()()
+        expected = colored(
             "Copied the following files to . successfully!\n['/tmp/tests/first']", "green"
         )
+        assert expected == actual
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
@@ -158,6 +160,34 @@ class TestShot(unittest.TestCase):
             == "Copied the following files to . successfully!\n['/tmp/tests/1']"
         )
         check_output_mock.assert_has_calls(check_output_calls)
+        copy_mock.assert_has_calls(copy_mock_calls)
+
+    # TODO: ensure tests clean up after themselves!
+    # This was failing when called test_changing_extension_yes, because it ran before test_default_args
+    @patch("builtins.print")  # note print interferes with termcolor somehow, use color=False
+    @patch("glob.glob")
+    @patch("shutil.copy")
+    @patch("subprocess.check_output")
+    def test_extension_change_yes(self, check_output_mock, copy_mock, glob_mock, print_mock):
+        """
+        should warn the user the extension is being changed
+        """
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/first.txt"]]
+
+        copy_mock_calls = [call("/tmp/tests/first.txt", "./first.md")]
+        print_mock_calls = [
+            call(
+                colored(
+                    "Warning: src and dst extensions don't match. src: .txt, dst: .md", "yellow"
+                )
+            )
+        ]
+
+        assert (
+            Shot(num=2, color=False, yes=True, dst="./first.md")()
+            == "Copied the following files to ./first.md successfully!\n['/tmp/tests/first.txt']"
+        )
         copy_mock.assert_has_calls(copy_mock_calls)
 
     @patch("glob.glob")
