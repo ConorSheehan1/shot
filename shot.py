@@ -24,6 +24,7 @@ def _confirm() -> bool:
     return Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "y"
 
 
+# TODO: refactor to class?
 # TODO: test _confirm_extension
 def _confirm_extension(src: str, dst: str) -> bool:
     if os.path.isdir(dst):
@@ -39,6 +40,44 @@ def _confirm_extension(src: str, dst: str) -> bool:
         )
     )
     return _confirm()
+
+
+def _validate_args(src: str, dst: str, num: int, start: int) -> str:
+    err_msg = ""
+    if src:
+        src = os.path.expanduser(src)
+        if not os.path.isdir(src):
+            err_msg += f"src must be a directory. got:{src}\n"
+    dst = os.path.expanduser(dst)
+    # TODO: add when num > 1 to warning
+    if num > 1 and not os.path.isdir(dst):
+        err_msg += f"dst must be a directory. got:{dst}\n"
+    if start < 1:
+        err_msg += f"start must be > 0. got:{start}\n"
+    if num < 1:
+        err_msg += f"num must be > 0. got:{num}\n"
+    return err_msg
+
+
+def _validate_screenshots_to_copy(
+    screenshots_to_copy: List[str],
+    screenshot_dir_parsed: str,
+    start: int,
+    num: int,
+    yes: bool
+):
+    if len(screenshots_to_copy) < 1:
+        return termcolor.colored(f"No files found in {screenshot_dir_parsed}", "red")
+    if len(screenshots_to_copy) < num:
+        print(
+            termcolor.colored(
+                f"Warning: there are not enough files to copy with start:{start}, num:{num}",
+                "yellow",
+            )
+        )
+        if not yes and not _confirm():
+            return True
+    return False
 
 
 def shot(
@@ -79,23 +118,7 @@ def shot(
         termcolor.colored = lambda message, color: message  # type: ignore
 
     cmd = "mv" if mv else "cp"
-    err_msg = ""
-
-    if src:
-        src = os.path.expanduser(src)
-        if not os.path.isdir(src):
-            err_msg += f"src must be a directory. got:{src}\n"
-
-    dst = os.path.expanduser(dst)
-
-    if num > 1 and not os.path.isdir(dst):
-        err_msg += f"dst must be a directory. got:{dst}\n"
-
-    if start < 1:
-        err_msg += f"start must be > 0. got:{start}\n"
-    if num < 1:
-        err_msg += f"num must be > 0. got:{num}\n"
-
+    err_msg = _validate_args(src, dst, num, start)
     if err_msg:
         return termcolor.colored(err_msg, "red")
 
@@ -113,19 +136,15 @@ def shot(
         glob.glob(f"{screenshot_dir_parsed}/*"), key=os.path.getctime, reverse=True
     )
     screenshots_to_copy = all_screenshots[start - 1 : start + num - 1]
-
-    if len(screenshots_to_copy) < 1:
-        return termcolor.colored(f"No files found in {screenshot_dir_parsed}", "red")
-
-    if len(screenshots_to_copy) < num:
-        print(
-            termcolor.colored(
-                f"Warning: there are not enough files to copy with start:{start}, num:{num}",
-                "yellow",
-            )
-        )
-        if not yes and not _confirm():
-            return
+    screenshot_err = _validate_screenshots_to_copy(
+        screenshots_to_copy,
+        screenshot_dir_parsed,
+        start,
+        num,
+        yes
+    )
+    if screenshot_err:
+        return screenshot_err
 
     equivalent_command = " ".join([cmd, " ".join(screenshots_to_copy), dst])
     if dry_run:
