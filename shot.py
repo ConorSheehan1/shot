@@ -7,7 +7,7 @@ from typing import List
 
 # Third party
 import fire
-import termcolor  # TODO: replace termcolor with rich
+from rich.console import Console
 from rich.prompt import Prompt
 
 commands = {"cp": "Copied", "mv": "Moved"}
@@ -65,13 +65,16 @@ class Shot:
         self.encoding = encoding
         self.version = version
 
+        color_system = "auto" if color else None
+        self.console = Console(color_system=color_system)  # type: ignore
+
     def _get_shell_output(self, args: List[str]) -> str:
         # subprocess stdout is in bytes with trailing new line.
         # need to decode and strip to get string back.
         # e.g. b'700aa82a2b0c\n' -> '700aa82a2b0c'
         return subprocess.check_output(args).decode(self.encoding).strip()
 
-    def _confirm_extension(self, screenshot: str) -> bool:
+    def _valid_extension(self, screenshot: str) -> bool:
         if os.path.isdir(self.dst):
             return True
 
@@ -79,16 +82,11 @@ class Shot:
         if src_ext == dst_ext:
             return True
 
-        print(
-            termcolor.colored(
-                f"Warning: src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}",
-                "yellow",
-            )
+        self.console.print(
+            f"Warning: src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}",
+            style="yellow",
         )
-        if self.yes:
-            return True
-
-        return _confirm()
+        return self.yes or _confirm()  # if -y or users inputs y return True
 
     def _validate_args(self) -> str:
         err_msg = ""
@@ -105,32 +103,27 @@ class Shot:
             err_msg += f"num must be > 0. got:{self.num}\n"
         return err_msg
 
-    def _validate_screenshots_to_copy(self):
+    def _valid_screenshots_to_copy(self):
         if len(self.screenshots_to_copy) < 1:
-            return termcolor.colored(f"No files found in {self.screenshot_dir_parsed}", "red")
+            self.console.print(f"No files found in {self.screenshot_dir_parsed}", style="red")
+            return False
         if len(self.screenshots_to_copy) < self.num:
-            print(
-                termcolor.colored(
-                    f"Warning: there are not enough files to copy with start:{self.start}, num:{self.num}",
-                    "yellow",
-                )
+            self.console.print(
+                f"Warning: there are not enough files to copy with start:{self.start}, num:{self.num}",
+                style="yellow",
             )
-            if not self.yes and not _confirm():
-                return True
-        return False
+            return self.yes or _confirm()
+        return True
 
     def __call__(self):
         if self.version:
             return __version__
 
-        if not self.color:
-            termcolor.colored = lambda message, color: message  # type: ignore
-
         cmd = "mv" if self.mv else "cp"
         # TODO: move to 3.8, use walrus operator?
         err_msg = self._validate_args()
         if err_msg:
-            return termcolor.colored(err_msg, "red")
+            return self.console.print(err_msg, style="red")
 
         if self.src:
             self.screenshot_dir = self.src
@@ -146,33 +139,30 @@ class Shot:
             glob.glob(f"{self.screenshot_dir_parsed}/*"), key=os.path.getctime, reverse=True
         )
         self.screenshots_to_copy = all_screenshots[self.start - 1 : self.start + self.num - 1]
-        screenshot_err = self._validate_screenshots_to_copy()
-        if screenshot_err:
-            return screenshot_err
+        if not self._valid_screenshots_to_copy():
+            return False
 
         equivalent_command = " ".join([cmd, " ".join(self.screenshots_to_copy), self.dst])
         if self.dry_run:
             return equivalent_command
 
-        success_msg = termcolor.colored(
-            f"{commands[cmd]} the following files to {self.dst} successfully!\n{self.screenshots_to_copy}",
-            "green",
-        )
-        err_msg = termcolor.colored(f"{equivalent_command} failed", "red")
-
         try:
             for screenshot_to_copy in self.screenshots_to_copy:
-                if not self._confirm_extension(screenshot_to_copy):
+                if not self._valid_extension(screenshot_to_copy):
                     return
+                # TODO: warn if dst file already exists?
                 if cmd == "cp":
                     shutil.copy(screenshot_to_copy, self.dst)
                 elif cmd == "mv":
                     shutil.move(screenshot_to_copy, self.dst)
                 # no need for else, should be handled above by `if cmd not in accepted_cmds:`
             if not self.quiet:
-                return success_msg
+                self.console.print(
+                    f"{commands[cmd]} the following files to {self.dst} successfully!\n{self.screenshots_to_copy}",
+                    style="green",
+                )
         except Exception as e:
-            print(err_msg)
+            self.console.print(f"{equivalent_command} failed", style="red")
             if self.debug:
                 raise e
             raise SystemExit(1)

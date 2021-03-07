@@ -45,4 +45,5 @@ poetry run bumpversion --commit --tag patch
 #### Approach
 Errors are swallowed in favor of user friendly short messages.
 Usually wouldn't suppress errors, but traces can be super long, and there shouldn't be much to handle here.
-TODO: possibly switch to rich, then leave exceptions since they'll be formatted?
+TODO: use rich, then leave exceptions since they'll be formatted?
+TODO: add pytest random order plugin
