@@ -27,7 +27,7 @@ black = { version = "*", allow-prereleases = true }
 bump2version = "*"
 isort = { version = "*", extras = ["poetry"] }
 mypy = "^0.780"
-pytest = "*"
+pytest = "^1.0.4"
 taskipy = "*"
 
 # https://github.com/python-poetry/poetry/issues/241
@@ -40,9 +40,9 @@ dev = "python shot.py"
 isort = 'isort .'
 lint = "black ."
 mypy = "mypy --ignore-missing-imports shot.py"
-tests = "python -m pytest tests"
-unit_tests = "python -m pytest tests/unit"
-integration_tests = "python -m pytest tests/integration"
+tests = "python -m pytest --random-order tests"
+unit_tests = "python -m pytest --random-order tests/unit"
+integration_tests = "python -m pytest --random-order tests/integration"
 install_hooks = "python .githooks/install.py"
 
 # linter configs
