@@ -14,10 +14,6 @@ commands = {"cp": "Copied", "mv": "Moved"}
 __version__ = "1.0.0"
 
 
-def _confirm() -> bool:
-    return Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "y"
-
-
 class Shot:
     """
     Screenshot Helper for OSX Terminal
@@ -74,7 +70,13 @@ class Shot:
         # e.g. b'700aa82a2b0c\n' -> '700aa82a2b0c'
         return subprocess.check_output(args).decode(self.encoding).strip()
 
+    def _confirm(self) -> bool:
+        return Prompt.ask("Do you want to continue?", choices=["y", "n"]) == "y"
+
     def _valid_extension(self, screenshot: str) -> bool:
+        """
+        return True if extension is not being changed, or user has chosen to change it.
+        """
         if os.path.isdir(self.dst):
             return True
 
@@ -86,9 +88,30 @@ class Shot:
             f"Warning: src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}",
             style="yellow",
         )
-        return self.yes or _confirm()  # if -y or users inputs y return True
+
+        return self.yes or self._confirm()  # if -y or users inputs y return True
+
+    def _overwrite_file(self, screenshot: str) -> bool:
+        """
+        return True if file does not exist or user has chosen to overwrite it.
+        """
+        dst = os.path.join(self.dst, os.path.basename(screenshot))
+        if not os.path.isfile(dst):
+            return True
+
+        self.console.print(f"Warning: {dst} already exists.", style="yellow")
+        return self.yes or self._confirm()
+
+    def _can_run_op(self, screenshot: str) -> bool:
+        """
+        return True if copy/move operation can be run, False if not
+        """
+        return self._valid_extension(screenshot) and self._overwrite_file(screenshot)
 
     def _validate_args(self) -> str:
+        """
+        returns error msg if there are errors, otherwise empty string
+        """
         err_msg = ""
         if self.src:
             self.src = os.path.expanduser(self.src)
@@ -112,7 +135,7 @@ class Shot:
                 f"Warning: there are not enough files to copy with start:{self.start}, num:{self.num}",
                 style="yellow",
             )
-            return self.yes or _confirm()
+            return self.yes or self._confirm()
         return True
 
     def __call__(self):
@@ -148,9 +171,8 @@ class Shot:
 
         try:
             for screenshot_to_copy in self.screenshots_to_copy:
-                if not self._valid_extension(screenshot_to_copy):
+                if not self._can_run_op(screenshot_to_copy):
                     return
-                # TODO: warn if dst file already exists?
                 if cmd == "cp":
                     shutil.copy(screenshot_to_copy, self.dst)
                 elif cmd == "mv":

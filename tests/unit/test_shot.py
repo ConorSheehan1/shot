@@ -215,7 +215,7 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/2", "."), call("/tmp/tests/3", ".")]
 
-        s = Shot(start=2, num=2, color=False)
+        s = Shot(start=2, num=2)
         s.console.print = MagicMock()
         s()
         s.console.print.assert_called_with(

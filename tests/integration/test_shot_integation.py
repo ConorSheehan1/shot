@@ -1,5 +1,6 @@
 # Standard Library
 import os
+import shutil
 import unittest
 
 # Third party
@@ -23,6 +24,10 @@ def setup_dirs(tmp_path, nfiles=1):
     return src_dir, dst_dir, last_src_file
 
 
+def tear_down_dirs(tmp_path):
+    shutil.rmtree(tmp_path)
+
+
 def test_cp(tmp_path):
     """
     src file should be unchanged, dst file should exist after running shot
@@ -34,6 +39,7 @@ def test_cp(tmp_path):
     Shot(src=str(src_dir), dst=str(dst_dir))()
     assert os.path.exists(src_file) == True
     assert os.path.exists(expected_output_path) == True
+    tear_down_dirs(tmp_path)
 
 
 def test_mv(tmp_path):
@@ -58,7 +64,9 @@ def test_cp_to_file(tmp_path):
     expected_output_path = dst_dir / "bar.txt"
     assert os.path.exists(src_file) == True
     assert os.path.exists(expected_output_path) == False
-    Shot(src=str(src_dir), dst=str(expected_output_path))()
+    s = Shot(src=str(src_dir), dst=str(expected_output_path))
+    s._confirm = lambda: True  # avoid capturing stdin during test
+    s()
     assert os.path.exists(src_file) == True
     assert os.path.exists(expected_output_path) == True
 
@@ -96,7 +104,9 @@ def test_cp_file_exists(tmp_path):
     """
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
     with pytest.raises(SystemExit) as context:
-        Shot(src=str(src_dir), dst=str(src_dir))()
+        s = Shot(src=str(src_dir), dst=str(src_dir))
+        s._confirm = lambda: True  # avoid capturing stdin during test
+        s()
     assert (1,) == context.value.args
 
 
@@ -107,7 +117,9 @@ def test_debug_cp_file_exists(tmp_path):
     """
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
     with pytest.raises(Exception) as context:
-        Shot(src=str(src_dir), dst=str(src_dir), debug=True)()
+        s = Shot(src=str(src_dir), dst=str(src_dir), debug=True)
+        s._confirm = lambda: True  # avoid capturing stdin during test
+        s()
     assert f"'{src_file}' and '{src_file}' are the same file" in context.value.args
 
 
@@ -118,5 +130,7 @@ def test_debug_mv_file_exists(tmp_path):
     """
     src_dir, dst_dir, src_file = setup_dirs(tmp_path)
     with pytest.raises(Exception) as context:
-        Shot(src=str(src_dir), dst=str(src_dir), mv=True, debug=True)()
+        s = Shot(src=str(src_dir), dst=str(src_dir), mv=True, debug=True)
+        s._confirm = lambda: True  # avoid capturing stdin during test
+        s()
     assert f"Destination path '{src_file}' already exists" in context.value.args
