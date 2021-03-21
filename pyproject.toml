@@ -14,21 +14,22 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-# would be nice to sort these https://github.com/python-poetry/poetry/issues/312
+# should be dev-extras https://github.com/python-poetry/poetry/issues/1644
+# can't have dev optionals https://github.com/python-poetry/poetry/pull/606
+# would be nice to sort dependencies https://github.com/python-poetry/poetry/issues/312
 [tool.poetry.dependencies]
 python = "^3.6"
 fire = "^0.3.1"
-
-# should be dev-extras https://github.com/python-poetry/poetry/issues/1644
-# can't have dev optionals https://github.com/python-poetry/poetry/pull/606
 rich = "^9.12.4"
+
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
 bump2version = "*"
 isort = { version = "*", extras = ["poetry"] }
 mypy = "^0.780"
-pytest = "^3.0.0"
+pytest = "*"
 taskipy = "*"
+pytest-random-order = "^1.0.4"
 
 # https://github.com/python-poetry/poetry/issues/241
 # dev scripts
