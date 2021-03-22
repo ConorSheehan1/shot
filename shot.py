@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 commands = {"cp": "Copied", "mv": "Moved"}
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 
 class Shot:
