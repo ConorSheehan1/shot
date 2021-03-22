@@ -1,12 +1,12 @@
 # Standard Library
 import unittest
-from unittest.mock import call, patch
+from unittest.mock import MagicMock, call, patch
 
 # Third party
-from termcolor import colored
+import pytest
 
 # shot
-from shot import shot
+from shot import Shot
 
 
 class TestShot(unittest.TestCase):
@@ -15,6 +15,8 @@ class TestShot(unittest.TestCase):
     """
 
     def setUp(self):
+        # TODO: refactor, not all tests need isdir true for all args.
+        # e.g. test_changing_extension_yes
         self.isdir_patcher = patch("os.path.isdir")
         self.mock_isdir = self.isdir_patcher.start()
         self.mock_isdir.return_value = True
@@ -29,7 +31,7 @@ class TestShot(unittest.TestCase):
         """
         should return the version
         """
-        assert shot(version=True) == "1.0.0"
+        assert Shot(version=True)() == "1.0.0"
 
     @patch("glob.glob")
     @patch("shutil.copy")
@@ -44,8 +46,12 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/first", ".")]
 
-        assert shot() == colored(
-            "Copied the following files to . successfully!\n['/tmp/tests/first']", "green"
+        s = Shot()
+        s.console.print = MagicMock()
+
+        s()
+        s.console.print.assert_called_with(
+            "Copied the following files to . successfully!\n['/tmp/tests/first']", style="green"
         )
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
@@ -63,7 +69,12 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/first", ".")]
 
-        assert shot(quiet=True) == None
+        s = Shot(quiet=True)
+        s.console.print = MagicMock()
+
+        assert s() == None
+        # assert self.console.print was not called
+        s.console.print.assert_has_calls([])
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
@@ -78,14 +89,14 @@ class TestShot(unittest.TestCase):
 
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
 
-        assert shot(dry_run=True) == "cp /tmp/tests/first ."
+        assert Shot(dry_run=True)() == "cp /tmp/tests/first ."
         check_output_mock.assert_has_calls(check_output_calls)
 
     @patch("glob.glob")
     def test_src(self, glob_mock):
         glob_mock.side_effect = [["/tmp/some/other/path"]]
 
-        assert shot(src="/tmp/some/other/path", dry_run=True) == "cp /tmp/some/other/path ."
+        assert Shot(src="/tmp/some/other/path", dry_run=True)() == "cp /tmp/some/other/path ."
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
@@ -93,7 +104,7 @@ class TestShot(unittest.TestCase):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
 
-        assert shot(dst="/tmp/output", dry_run=True) == "cp /tmp/tests/first /tmp/output"
+        assert Shot(dst="/tmp/output", dry_run=True)() == "cp /tmp/tests/first /tmp/output"
 
     @patch("glob.glob")
     @patch("subprocess.check_output")
@@ -101,7 +112,7 @@ class TestShot(unittest.TestCase):
         check_output_mock.side_effect = [b"/tmp/tests\n"]
         glob_mock.side_effect = [["/tmp/tests/first"]]
 
-        assert shot(mv=True, dry_run=True) == "mv /tmp/tests/first ."
+        assert Shot(mv=True, dry_run=True)() == "mv /tmp/tests/first ."
 
     @patch("glob.glob")
     @patch("shutil.move")
@@ -116,9 +127,11 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         move_mock_calls = [call("/tmp/tests/first", ".")]
 
-        assert (
-            shot(mv=True, color=False)
-            == "Moved the following files to . successfully!\n['/tmp/tests/first']"
+        s = Shot(mv=True)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with(
+            "Moved the following files to . successfully!\n['/tmp/tests/first']", style="green"
         )
         check_output_mock.assert_has_calls(check_output_calls)
         move_mock.assert_has_calls(move_mock_calls)
@@ -131,14 +144,15 @@ class TestShot(unittest.TestCase):
         """
         check_output_mock.side_effect = [b"/tmp/tests/empty\n"]
         glob_mock.side_effect = [[]]
+        s = Shot()
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with("No files found in /tmp/tests/empty", style="red")
 
-        assert shot(color=False) == "No files found in /tmp/tests/empty"
-
-    @patch("builtins.print")  # note print interferes with termcolor somehow, use color=False
     @patch("glob.glob")
     @patch("shutil.copy")
     @patch("subprocess.check_output")
-    def test_not_enough_files(self, check_output_mock, copy_mock, glob_mock, print_mock):
+    def test_not_enough_files_yes(self, check_output_mock, copy_mock, glob_mock):
         """
         should warn the user there are not enough files, but still copy the ones available
         """
@@ -148,22 +162,50 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/1", ".")]
         print_mock_calls = [
-            call(
-                colored("Warning: there are not enough files to copy with start:0, num:1", "yellow")
-            )
+            call("Warning: there are not enough files to copy with start:1, num:2", style="yellow"),
+            call("Copied the following files to . successfully!\n['/tmp/tests/1']", style="green"),
         ]
 
-        assert (
-            shot(num=2, color=False)
-            == "Copied the following files to . successfully!\n['/tmp/tests/1']"
-        )
+        s = Shot(num=2, yes=True)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_has_calls(print_mock_calls)
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
 
     @patch("glob.glob")
     @patch("shutil.copy")
     @patch("subprocess.check_output")
-    def test_s_and_n(self, check_output_mock, copy_mock, glob_mock):
+    def test_changing_extension_yes(self, check_output_mock, copy_mock, glob_mock):
+        """
+        should warn the user the extension is being changed
+        """
+        # make sure dst is treated as file
+        # self.mock_isdir.return_value = True
+        self.mock_isdir.side_effect = [False, False]
+        check_output_mock.side_effect = [b"/tmp/tests\n"]
+        glob_mock.side_effect = [["/tmp/tests/first.txt"]]
+        print_mock_calls = [
+            call(
+                "Warning: src and dst extensions don't match. src: .txt, dst: .md", style="yellow"
+            ),
+            call(
+                "Copied the following files to ./first.md successfully!\n['/tmp/tests/first.txt']",
+                style="green",
+            ),
+        ]
+
+        copy_mock_calls = [call("/tmp/tests/first.txt", "./first.md")]
+        s = Shot(yes=True, dst="./first.md")
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_has_calls(print_mock_calls)
+        copy_mock.assert_has_calls(copy_mock_calls)
+
+    @patch("glob.glob")
+    @patch("shutil.copy")
+    @patch("subprocess.check_output")
+    def test_start_and_num(self, check_output_mock, copy_mock, glob_mock):
         """
         should copy the 2 latest screenshots, starting from the 2nd latest
         """
@@ -173,9 +215,12 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/2", "."), call("/tmp/tests/3", ".")]
 
-        assert (
-            shot(start=2, num=2, color=False)
-            == "Copied the following files to . successfully!\n['/tmp/tests/2', '/tmp/tests/3']"
+        s = Shot(start=2, num=2)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with(
+            "Copied the following files to . successfully!\n['/tmp/tests/2', '/tmp/tests/3']",
+            style="green",
         )
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
@@ -183,22 +228,32 @@ class TestShot(unittest.TestCase):
 
 class TestShotErrorHandling(unittest.TestCase):
     def test_src(self):
-        assert (
-            shot(src="dir/that/does_not/exist", color=False)
-            == "src must be a directory. got:dir/that/does_not/exist\n"
+        s = Shot(src="dir/that/does_not/exist")
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with(
+            "src must be a directory. got:dir/that/does_not/exist\n", style="red"
         )
 
     def test_dst(self):
-        assert (
-            shot(dst="dir/that/does_not/exist", num=2, color=False)
-            == "dst must be a directory. got:dir/that/does_not/exist\n"
+        s = Shot(dst="dir/that/does_not/exist", num=2)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with(
+            "dst must be a directory when num > 1. got:dir/that/does_not/exist\n", style="red"
         )
 
-    def test_s(self):
-        assert shot(start=0, color=False) == "start must be > 0. got:0\n"
+    def test_start(self):
+        s = Shot(start=0)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with("start must be > 0. got:0\n", style="red")
 
-    def test_n(self):
-        assert shot(num=0, color=False) == "num must be > 0. got:0\n"
+    def test_num(self):
+        s = Shot(num=0)
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with("num must be > 0. got:0\n", style="red")
 
     def test_multiple_errors(self):
         """
@@ -207,7 +262,10 @@ class TestShotErrorHandling(unittest.TestCase):
         e.g. num=1, dst can be file or directory. if not exists, will create file.
              num=2, dst must be directory.
         """
-        assert (
-            shot(num=0, start=0, dst="foo", src="foo", color=False)
-            == "src must be a directory. got:foo\nstart must be > 0. got:0\nnum must be > 0. got:0\n"
+        s = Shot(num=0, start=0, dst="foo", src="foo")
+        s.console.print = MagicMock()
+        s()
+        s.console.print.assert_called_with(
+            "src must be a directory. got:foo\nstart must be > 0. got:0\nnum must be > 0. got:0\n",
+            style="red",
         )

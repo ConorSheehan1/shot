@@ -14,14 +14,14 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-# would be nice to sort these https://github.com/python-poetry/poetry/issues/312
+# should be dev-extras https://github.com/python-poetry/poetry/issues/1644
+# can't have dev optionals https://github.com/python-poetry/poetry/pull/606
+# would be nice to sort dependencies https://github.com/python-poetry/poetry/issues/312
 [tool.poetry.dependencies]
 python = "^3.6"
 fire = "^0.3.1"
-termcolor = "^1.1.0"
+rich = "^9.12.4"
 
-# should be dev-extras https://github.com/python-poetry/poetry/issues/1644
-# can't have dev optionals https://github.com/python-poetry/poetry/pull/606
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
 bump2version = "*"
@@ -29,6 +29,7 @@ isort = { version = "*", extras = ["poetry"] }
 mypy = "^0.780"
 pytest = "*"
 taskipy = "*"
+pytest-random-order = "^1.0.4"
 
 # https://github.com/python-poetry/poetry/issues/241
 # dev scripts
@@ -40,9 +41,9 @@ dev = "python shot.py"
 isort = 'isort .'
 lint = "black ."
 mypy = "mypy --ignore-missing-imports shot.py"
-tests = "python -m pytest tests"
-unit_tests = "python -m pytest tests/unit"
-integration_tests = "python -m pytest tests/integration"
+tests = "python -m pytest --random-order tests"
+unit_tests = "python -m pytest --random-order tests/unit"
+integration_tests = "python -m pytest --random-order tests/integration"
 install_hooks = "python .githooks/install.py"
 
 # linter configs
