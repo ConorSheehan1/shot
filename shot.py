@@ -179,8 +179,9 @@ class Shot:
                     shutil.move(screenshot_to_copy, self.dst)
                 # no need for else, should be handled above by `if cmd not in accepted_cmds:`
             if not self.quiet:
+                screenshot_names = [os.path.basename(v) for v in self.screenshots_to_copy]
                 self.console.print(
-                    f"{commands[cmd]} the following files to {self.dst} successfully!\n{self.screenshots_to_copy}",
+                    f"{commands[cmd]} the following files from {self.screenshot_dir} to {self.dst} successfully!\n{screenshot_names}",
                     style="green",
                 )
         except Exception as e:

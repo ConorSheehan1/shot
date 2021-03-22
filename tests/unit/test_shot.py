@@ -51,7 +51,8 @@ class TestShot(unittest.TestCase):
 
         s()
         s.console.print.assert_called_with(
-            "Copied the following files to . successfully!\n['/tmp/tests/first']", style="green"
+            "Copied the following files from /tmp/tests to . successfully!\n['first']",
+            style="green",
         )
         check_output_mock.assert_has_calls(check_output_calls)
         copy_mock.assert_has_calls(copy_mock_calls)
@@ -131,7 +132,7 @@ class TestShot(unittest.TestCase):
         s.console.print = MagicMock()
         s()
         s.console.print.assert_called_with(
-            "Moved the following files to . successfully!\n['/tmp/tests/first']", style="green"
+            "Moved the following files from /tmp/tests to . successfully!\n['first']", style="green"
         )
         check_output_mock.assert_has_calls(check_output_calls)
         move_mock.assert_has_calls(move_mock_calls)
@@ -163,7 +164,10 @@ class TestShot(unittest.TestCase):
         copy_mock_calls = [call("/tmp/tests/1", ".")]
         print_mock_calls = [
             call("Warning: there are not enough files to copy with start:1, num:2", style="yellow"),
-            call("Copied the following files to . successfully!\n['/tmp/tests/1']", style="green"),
+            call(
+                "Copied the following files from /tmp/tests to . successfully!\n['1']",
+                style="green",
+            ),
         ]
 
         s = Shot(num=2, yes=True)
@@ -190,7 +194,7 @@ class TestShot(unittest.TestCase):
                 "Warning: src and dst extensions don't match. src: .txt, dst: .md", style="yellow"
             ),
             call(
-                "Copied the following files to ./first.md successfully!\n['/tmp/tests/first.txt']",
+                "Copied the following files from /tmp/tests to ./first.md successfully!\n['first.txt']",
                 style="green",
             ),
         ]
@@ -219,7 +223,7 @@ class TestShot(unittest.TestCase):
         s.console.print = MagicMock()
         s()
         s.console.print.assert_called_with(
-            "Copied the following files to . successfully!\n['/tmp/tests/2', '/tmp/tests/3']",
+            "Copied the following files from /tmp/tests to . successfully!\n['2', '3']",
             style="green",
         )
         check_output_mock.assert_has_calls(check_output_calls)
