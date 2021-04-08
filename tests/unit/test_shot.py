@@ -163,7 +163,10 @@ class TestShot(unittest.TestCase):
         check_output_calls = [call(["defaults", "read", "com.apple.screencapture", "location"])]
         copy_mock_calls = [call("/tmp/tests/1", ".")]
         print_mock_calls = [
-            call("Warning: there are not enough files to copy with start:1, num:2", style="yellow"),
+            call(
+                "Warning: there are not enough files to copy with {'start': 1, 'num': 2}",
+                style="yellow",
+            ),
             call(
                 "Copied the following files from /tmp/tests to . successfully!\n['1']",
                 style="green",
@@ -191,7 +194,8 @@ class TestShot(unittest.TestCase):
         glob_mock.side_effect = [["/tmp/tests/first.txt"]]
         print_mock_calls = [
             call(
-                "Warning: src and dst extensions don't match. src: .txt, dst: .md", style="yellow"
+                "Warning: src and dst extensions don't match. {'src': '.txt', 'dst': '.md'}",
+                style="yellow",
             ),
             call(
                 "Copied the following files from /tmp/tests to ./first.md successfully!\n['first.txt']",
