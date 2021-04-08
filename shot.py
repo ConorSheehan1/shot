@@ -84,8 +84,9 @@ class Shot:
         if src_ext == dst_ext:
             return True
 
+        extensions = {"src": src_ext, "dst": dst_ext}
         self.console.print(
-            f"Warning: src and dst extensions don't match. src: {src_ext}, dst: {dst_ext}",
+            f"Warning: src and dst extensions don't match. {extensions}",
             style="yellow",
         )
 
@@ -131,8 +132,9 @@ class Shot:
             self.console.print(f"No files found in {self.screenshot_dir_parsed}", style="red")
             return False
         if len(self.screenshots_to_copy) < self.num:
+            copy_args = {"start": self.start, "num": self.num}
             self.console.print(
-                f"Warning: there are not enough files to copy with start:{self.start}, num:{self.num}",
+                f"Warning: there are not enough files to copy with {copy_args}",
                 style="yellow",
             )
             return self.yes or self._confirm()
