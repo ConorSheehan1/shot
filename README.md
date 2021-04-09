@@ -19,8 +19,7 @@ Copy or move screenshots and recordings around from a terminal.
 brew install conorsheehan1/conorsheehan1/shot
 
 # option 2 github release
-# https://github.com/ConorSheehan1/shot/releases e.g.
-pip install https://github.com/ConorSheehan1/shot/releases/download/latest/shot.tar.gz
+pip install https://github.com/ConorSheehan1/shot/releases/latest/download/shot.tar.gz
 
 # option 3 from source
 git clone git@github.com:ConorSheehan1/shot.git
