@@ -20,7 +20,7 @@ brew install conorsheehan1/conorsheehan1/shot
 
 # option 2 github release
 # https://github.com/ConorSheehan1/shot/releases e.g.
-pip install https://github.com/ConorSheehan1/shot/releases/download/v0.1.2/shot-0.1.2.tar.gz
+pip install https://github.com/ConorSheehan1/shot/releases/download/latest/shot.tar.gz
 
 # option 3 from source
 git clone git@github.com:ConorSheehan1/shot.git
