@@ -29,8 +29,8 @@ jobs:
       - name: Copy build files to generic names
         id: file_names
         run: |
-          cp shot-${{ steps.version.outputs.version }}.tar.gz shot.tar.gz
-          cp shot-${{ steps.version.outputs.version }}-py3-none-any.whl shot-py3-none-any.whl
+          cp dist/shot-${{ steps.version.outputs.version }}.tar.gz dist/shot.tar.gz
+          cp dist/shot-${{ steps.version.outputs.version }}-py3-none-any.whl dist/shot-py3-none-any.whl
           echo ::set-output name=tar_file::shot.tar.gz
           echo ::set-output name=wheel_file::shot-py3-none-any.whl
       - name: Generate SHAs
