@@ -4,6 +4,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tested python versions](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/shot/master/.github/workflows/ci.yml&label=Tested%20python%20versions&query=$.jobs.build.strategy.matrix.python)](https://github.com/ConorSheehan1/shot/blob/master/.github/workflows/ci.yml#L13)
 
+[![Homebrew tap Version](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/homebrew-ConorSheehan1/main/versions.yaml&label=Homebrew%20tap%20version&query=$.shot.version)](https://github.com/ConorSheehan1/homebrew-ConorSheehan1/blob/main/versions.yaml)
+[![Github Version](https://img.shields.io/github/tag/ConorSheehan1/shot.svg)](https://github.com/ConorSheehan1/shot/releases)
+
 **S**creenshot  
 **H**elper for  
 **O**SX  
